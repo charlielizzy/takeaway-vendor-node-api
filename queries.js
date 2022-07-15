@@ -1,4 +1,5 @@
 const Pool = require("pg").Pool;
+const jwt_decode = require("jwt-decode");
 
 //don't push to github - add to env and gitignore
 const pool = new Pool({
@@ -45,17 +46,22 @@ const getCustomer = (request, response) => {
 };
 
 const getVendorDetails = async (request, response) => {
-  const id = parseInt(request.params.id);
+  const { authorization } = request.headers;
+  const decoded = jwt_decode(authorization);
+  const { sub } = decoded;
+  // console.log("sub", sub);
+  // const id = parseInt(request.params.id);
   try {
     const { rows: vendorRows } = await pool.query(
-      "SELECT company_name, cuisine FROM vendors WHERE id = $1",
-      [id]
+      "SELECT company_name, cuisine, id FROM vendors WHERE auth_0_id = $1",
+      [sub]
     );
     const { rows: menuItemsRows } = await pool.query(
       "SELECT * FROM menu_items WHERE vendor_id = $1",
-      [id]
+      [vendorRows[0].id]
     );
     const data = {
+      auth_0_id: vendorRows[0].auth_0_id,
       company_name: vendorRows[0].company_name,
       cuisine: vendorRows[0].cuisine,
       menu_items: menuItemsRows,
