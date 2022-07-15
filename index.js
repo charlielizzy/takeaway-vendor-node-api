@@ -5,7 +5,20 @@ const app = express();
 const db = require("./queries");
 const port = 3001;
 const cors = require("cors");
+const { expressjwt: jwt } = require("express-jwt");
+const jwksRsa = require("jwks-rsa");
 
+const checkJwt = jwt({
+  secret: jwksRsa.expressJwtSecret({
+    cache: true,
+    rateLimit: true,
+    jwksRequestsPerMinute: 5,
+    jwksUri: `https://https://paddington.eu.auth0.com//.well-known/jwks.json`,
+  }),
+  audience: "https://paddington.eu.auth0.com/api/v2/",
+  issuer: "https://https://paddington.eu.auth0.com//",
+  algorithms: ["RS256"],
+});
 app.use(cors());
 app.use(bodyParser.json());
 app.use(
