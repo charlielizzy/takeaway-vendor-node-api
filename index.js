@@ -42,10 +42,10 @@ app.post("/customers", db.createCustomer);
 app.delete("/customers/:id", db.deleteCustomer);
 app.patch("/customers/:id", db.editNumber);
 app.post("/orders", db.createOrder);
-app.patch("/vendors/menu_item/:id", db.updateMenuItem);
+app.patch("/vendors/menu_item/:id", checkJwt, db.updateMenuItem);
 app.get("/vendors/menu_item/:id", db.getMenuItem);
 app.delete("/vendors/menu_item/:id", db.deleteMenuItem);
-app.post("/vendors", db.addMenuItem);
+app.post("/vendors", checkJwt, db.addMenuItem);
 
 app.listen(port, () => {
   console.log("My node app is running on port", port);

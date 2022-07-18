@@ -13,6 +13,16 @@ const pool = new Pool({
   },
 });
 
+const fetchVendor = async (authorization) => {
+  const decoded = jwt_decode(authorization);
+  const { sub } = decoded;
+  const results = await pool.query(
+    "SELECT * FROM vendors WHERE auth_0_id = $1",
+    [sub]
+  );
+  return results.rows[0];
+};
+
 const getOrders = (request, response) => {
   pool.query("SELECT * FROM orders", (error, results) => {
     if (error) {
@@ -46,26 +56,14 @@ const getCustomer = (request, response) => {
 };
 
 const getVendorDetails = async (request, response) => {
-  const { authorization } = request.headers;
-  const decoded = jwt_decode(authorization);
-  const { sub } = decoded;
-  // console.log("sub", sub);
-  // const id = parseInt(request.params.id);
   try {
-    const { rows: vendorRows } = await pool.query(
-      "SELECT company_name, cuisine, id FROM vendors WHERE auth_0_id = $1",
-      [sub]
-    );
+    const vendor = await fetchVendor(request.headers.authorization);
+    const { id } = vendor;
     const { rows: menuItemsRows } = await pool.query(
       "SELECT * FROM menu_items WHERE vendor_id = $1",
-      [vendorRows[0].id]
+      [id]
     );
-    const data = {
-      auth_0_id: vendorRows[0].auth_0_id,
-      company_name: vendorRows[0].company_name,
-      cuisine: vendorRows[0].cuisine,
-      menu_items: menuItemsRows,
-    };
+    const data = { ...vendor, menu_items: menuItemsRows };
     response.status(200).json(data);
   } catch (error) {
     throw error;
@@ -154,20 +152,31 @@ const getMenuItem = (request, response) => {
   );
 };
 
-const updateMenuItem = (request, response) => {
-  console.log("request.body", request.body);
-  const { name, price, vegan, vegetarian } = request.body;
+const updateMenuItem = async (request, response) => {
+  // console.log("request.body", request.body);
+  const vendor = await fetchVendor(request.headers.authorization);
   const id = parseInt(request.params.id);
-  pool.query(
-    "UPDATE menu_items SET name = $1, price = $2, vegan = $3, vegetarian = $4 WHERE id = $5",
-    [name, price, vegan, vegetarian, id],
-    (error, results) => {
-      if (error) {
-        throw error;
-      }
-      response.status(200).json(results.rows);
-    }
+  const { name, price, vegan, vegetarian } = request.body;
+  const results = await pool.query(
+    "SELECT vendor_id FROM menu_items WHERE id = $1",
+    [id]
   );
+  console.log("results.rows[0].vendor_id", results.rows[0].vendor_id);
+  console.log("vendor.id", vendor.id);
+  if (results.rows[0].vendor_id === vendor.id) {
+    pool.query(
+      "UPDATE menu_items SET name = $1, price = $2, vegan = $3, vegetarian = $4 WHERE id = $5",
+      [name, price, vegan, vegetarian, id],
+      (error, results) => {
+        if (error) {
+          throw error;
+        }
+        response.status(200).json(results.rows);
+      }
+    );
+  } else {
+    response.status(401).send();
+  }
 };
 
 const deleteMenuItem = (request, response) => {
@@ -180,19 +189,19 @@ const deleteMenuItem = (request, response) => {
   });
 };
 
-const addMenuItem = (request, response) => {
+const addMenuItem = async (request, response) => {
   const { name, price, vegan, vegetarian } = request.body;
-  const vendorid = parseInt(request.params.vendorid);
-  pool.query(
-    "INSERT INTO menu_items (name, price, vegan, vegetarian, vendor_id) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-    [name, price, vegan, vegetarian, vendorid],
-    (error, results) => {
-      if (error) {
-        throw error;
-      }
-      response.status(200).send();
-    }
-  );
+  try {
+    const vendor = await fetchVendor(request.headers.authorization);
+    const { id } = vendor;
+    await pool.query(
+      "INSERT INTO menu_items (name, price, vegan, vegetarian, vendor_id) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [name, price, vegan, vegetarian, id]
+    );
+    response.status(200).send();
+  } catch (error) {
+    throw error;
+  }
 };
 
 module.exports = {
