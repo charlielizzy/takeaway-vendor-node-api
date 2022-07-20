@@ -5,7 +5,8 @@ const app = express();
 const dotenv = require("dotenv");
 dotenv.config();
 const db = require("./queries");
-const port = 3001;
+const menu_items = require("./DB/menu_items");
+const port = process.env.PORT | 3001;
 const cors = require("cors");
 const { expressjwt: jwt } = require("express-jwt");
 const jwksRsa = require("jwks-rsa");
@@ -33,7 +34,10 @@ app.get("/", (request, response) => {
   response.json({ hello: "world" });
 });
 
-app.get("/vendor_details", checkJwt, db.getVendorDetails);
+app.get("/vendor_details", checkJwt, menu_items.getVendorDetails);
+app.patch("/vendors/menu_item/:id", checkJwt, menu_items.update);
+app.delete("/vendors/menu_item/:id", checkJwt, menu_items.deleteItem);
+app.post("/vendors", checkJwt, menu_items.add);
 
 app.get("/orders", db.getOrders);
 app.get("/customers", db.getCustomers);
@@ -42,10 +46,8 @@ app.post("/customers", db.createCustomer);
 app.delete("/customers/:id", db.deleteCustomer);
 app.patch("/customers/:id", db.editNumber);
 app.post("/orders", db.createOrder);
-app.patch("/vendors/menu_item/:id", checkJwt, db.updateMenuItem);
+
 app.get("/vendors/menu_item/:id", db.getMenuItem);
-app.delete("/vendors/menu_item/:id", db.deleteMenuItem);
-app.post("/vendors", checkJwt, db.addMenuItem);
 
 app.listen(port, () => {
   console.log("My node app is running on port", port);
