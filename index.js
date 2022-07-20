@@ -6,10 +6,10 @@ const dotenv = require("dotenv");
 dotenv.config();
 const db = require("./queries");
 const menu_items = require("./DB/menu_items");
-const port = process.env.PORT | 3001;
 const cors = require("cors");
 const { expressjwt: jwt } = require("express-jwt");
 const jwksRsa = require("jwks-rsa");
+const port = process.env.PORT | 3001;
 
 const checkJwt = jwt({
   secret: jwksRsa.expressJwtSecret({
@@ -22,6 +22,7 @@ const checkJwt = jwt({
   issuer: "https://paddington.eu.auth0.com/",
   algorithms: ["RS256"],
 });
+
 app.use(cors());
 app.use(bodyParser.json());
 app.use(
