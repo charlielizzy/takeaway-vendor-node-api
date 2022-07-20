@@ -1,14 +1,11 @@
 //shared functions
 const Pool = require("pg").Pool;
 const jwt_decode = require("jwt-decode");
+const connectionString = process.env.DATABASE_URL;
 
 //don't push to github - add to env and gitignore
 const pool = new Pool({
-  user: process.env.HEROKU_DB_USER,
-  host: process.env.HEROKU_DB_HOST,
-  database: process.env.HEROKU_DB_NAME,
-  password: process.env.HEROKU_DB_PASSWORD,
-  port: process.env.HEROKU_DB_PORT,
+  connectionString,
   ssl: {
     rejectUnauthorized: false,
   },
