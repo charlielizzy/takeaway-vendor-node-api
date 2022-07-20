@@ -9,7 +9,7 @@ const menu_items = require("./DB/menu_items");
 const cors = require("cors");
 const { expressjwt: jwt } = require("express-jwt");
 const jwksRsa = require("jwks-rsa");
-const port = process.env.PORT | 3001;
+const port = process.env.PORT || 3001;
 
 const checkJwt = jwt({
   secret: jwksRsa.expressJwtSecret({
