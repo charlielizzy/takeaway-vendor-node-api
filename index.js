@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const app = express();
 const dotenv = require("dotenv");
 dotenv.config();
-const db = require("./queries");
+const db = require("./DB/queries");
 const menu_items = require("./DB/menu_items");
 const cors = require("cors");
 const { expressjwt: jwt } = require("express-jwt");
@@ -39,6 +39,7 @@ app.get("/vendor_details", checkJwt, menu_items.getVendorDetails);
 app.patch("/vendors/menu_item/:id", checkJwt, menu_items.update);
 app.delete("/vendors/menu_item/:id", checkJwt, menu_items.deleteItem);
 app.post("/vendors", checkJwt, menu_items.add);
+app.post("/create_vendor", checkJwt, db.createVendor);
 
 app.get("/orders", db.getOrders);
 app.get("/customers", db.getCustomers);

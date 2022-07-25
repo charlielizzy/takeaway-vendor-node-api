@@ -1,15 +1,26 @@
-// const jwt_decode = require("jwt-decode");
-const { pool } = require("./DB/index");
+const { pool } = require("./index");
+const jwt_decode = require("jwt-decode");
 
-// const fetchVendor = async (authorization) => {
-//   const decoded = jwt_decode(authorization);
-//   const { sub } = decoded;
-//   const results = await pool.query(
-//     "SELECT * FROM vendors WHERE auth_0_id = $1",
-//     [sub]
-//   );
-//   return results.rows[0];
-// };
+const createVendor = (request, response, authorization) => {
+  // const { company_name, cuisine, postcode, description } = request.body;
+  try {
+    const decoded = jwt_decode(authorization);
+    const { sub } = decoded;
+    console.log("sub", sub);
+    //   const results = await pool.query(
+    //     "INSERT INTO vendors (company_name, cuisine, postcode, description, auth_0_id) VALUES ($1, $2, $3, $4, $5)",
+    //     [company_name, cuisine, postcode, description, sub],
+    //     (error) => {
+    //       response
+    //         .status(200)
+    //         .send(`New vendor created called ${results.rows[0].company_name}`);
+    //     }
+    //   );
+  } catch (error) {
+    throw error;
+  }
+  // console.log("create vendor endpoint hit");
+};
 
 const getOrders = (request, response) => {
   pool.query("SELECT * FROM orders", (error, results) => {
@@ -42,21 +53,6 @@ const getCustomer = (request, response) => {
     }
   );
 };
-
-// const getVendorDetails = async (request, response) => {
-//   try {
-//     const vendor = await fetchVendor(request.headers.authorization);
-//     const { id } = vendor;
-//     const { rows: menuItemsRows } = await pool.query(
-//       "SELECT * FROM menu_items WHERE vendor_id = $1",
-//       [id]
-//     );
-//     const data = { ...vendor, menu_items: menuItemsRows };
-//     response.status(200).json(data);
-//   } catch (error) {
-//     throw error;
-//   }
-// };
 
 const deleteCustomer = (request, response) => {
   const id = parseInt(request.params.id);
@@ -138,66 +134,6 @@ const getMenuItem = (request, response) => {
   );
 };
 
-// const updateMenuItem = async (request, response) => {
-
-//   const vendor = await fetchVendor(request.headers.authorization);
-//   const id = parseInt(request.params.id);
-//   const { name, price, vegan, vegetarian } = request.body;
-//   const results = await pool.query(
-//     "SELECT vendor_id FROM menu_items WHERE id = $1",
-//     [id]
-//   );
-
-//   if (results.rows[0].vendor_id === vendor.id) {
-//     pool.query(
-//       "UPDATE menu_items SET name = $1, price = $2, vegan = $3, vegetarian = $4 WHERE id = $5",
-//       [name, price, vegan, vegetarian, id],
-//       (error, results) => {
-//         if (error) {
-//           throw error;
-//         }
-//         response.status(200).json(results.rows);
-//       }
-//     );
-//   } else {
-//     response.status(401).send("You cannot update another vendor's menu item");
-//   }
-// };
-
-// const deleteMenuItem = async (request, response) => {
-//   const id = parseInt(request.params.id);
-//   const vendor = await fetchVendor(request.headers.authorization);
-//   const results = await pool.query(
-//     "SELECT vendor_id FROM menu_items WHERE id = $1",
-//     [id]
-//   );
-//   if (results.rows[0].vendor_id === vendor.id) {
-//     pool.query("DELETE FROM menu_items WHERE id = $1", [id], (error) => {
-//       if (error) {
-//         throw error;
-//       }
-//       response.status(200).send(`Item with ID ${id} has been deleted`);
-//     });
-//   } else {
-//     response.status(401).send("You cannot delete another vendor's menu item");
-//   }
-// };
-
-// const addMenuItem = async (request, response) => {
-//   const { name, price, vegan, vegetarian } = request.body;
-//   try {
-//     const vendor = await fetchVendor(request.headers.authorization);
-//     const { id } = vendor;
-//     await pool.query(
-//       "INSERT INTO menu_items (name, price, vegan, vegetarian, vendor_id) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-//       [name, price, vegan, vegetarian, id]
-//     );
-//     response.status(200).send();
-//   } catch (error) {
-//     throw error;
-//   }
-// };
-
 module.exports = {
   getOrders,
   getCustomers,
@@ -206,9 +142,6 @@ module.exports = {
   deleteCustomer,
   editNumber,
   createOrder,
-  // getVendorDetails,
   getMenuItem,
-  // updateMenuItem,
-  // deleteMenuItem,
-  // addMenuItem,
+  createVendor,
 };
