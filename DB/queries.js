@@ -1,25 +1,25 @@
 const { pool } = require("./index");
 const jwt_decode = require("jwt-decode");
 
-const createVendor = (request, response, authorization) => {
+const createVendor = async (request, response) => {
   // const { company_name, cuisine, postcode, description } = request.body;
+  const { authorization } = request.headers;
   try {
     const decoded = jwt_decode(authorization);
     const { sub } = decoded;
     console.log("sub", sub);
-    //   const results = await pool.query(
-    //     "INSERT INTO vendors (company_name, cuisine, postcode, description, auth_0_id) VALUES ($1, $2, $3, $4, $5)",
-    //     [company_name, cuisine, postcode, description, sub],
-    //     (error) => {
-    //       response
-    //         .status(200)
-    //         .send(`New vendor created called ${results.rows[0].company_name}`);
-    //     }
-    //   );
+    const results = await pool.query(
+      "INSERT INTO vendors (company_name, cuisine, postcode, description, auth_0_id) VALUES ($1, $2, $3, $4, $5)",
+      [company_name, cuisine, postcode, description, sub],
+      (error) => {
+        response
+          .status(200)
+          .send(`New vendor created called ${results.rows[0].company_name}`);
+      }
+    );
   } catch (error) {
     throw error;
   }
-  // console.log("create vendor endpoint hit");
 };
 
 const getOrders = (request, response) => {
